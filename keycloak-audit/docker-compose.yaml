@@ -1,0 +1,42 @@
+version: '2'
+services:
+  fluentd:
+    image: novomatic/fluentd-elasticsearch:v1.1-debian
+    volumes:
+    - ./env/fluentd/etc:/fluentd/etc
+    links:
+    - "elasticsearch"
+    ports:
+    - "24224:24224"
+    - "24224:24224/udp"
+  elasticsearch:
+    image: elasticsearch:5.6.9
+    expose:
+    - 9200
+    ports:
+    - "9200:9200"
+    environment:
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+  kibana:
+    image: kibana:5.6.9
+    links:
+    - "elasticsearch"
+    ports:
+    - "5601:5601"
+  keycloak:
+    image: jboss/keycloak:4.6.0.Final
+    expose:
+    - 8080
+    environment:
+    - KEYCLOAK_USER=admin
+    - KEYCLOAK_PASSWORD=admin
+    - FLUENTD_HOST=fluentd
+    entrypoint:
+    - "/scripts/keycloak.sh"
+    command:
+    - "-b 0.0.0.0"
+    ports:
+    - "8080:8080"
+    volumes:
+    - ./target/keycloak/providers:/opt/jboss/keycloak/standalone/deployments
+    - ./env/keycloak/scripts:/scripts

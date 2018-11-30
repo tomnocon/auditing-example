@@ -2,9 +2,10 @@ embed-server --std-out=echo
 batch
 
 /subsystem=keycloak-server/spi=eventsListener/:add
-/subsystem=keycloak-server/spi=eventsListener/provider=fluentd/:add(enabled=true,properties={ \
-    tag-prefix => "${env.FLUENTD_TAG_PREFIX:keycloak}", \
-    host => "${env.FLUENTD_HOST:localhost}"})
+/subsystem=keycloak-server/spi=eventsListener/provider=fluent/:add(enabled=true,properties={ \
+    tag-prefix => "${env.FLUENT_TAG_PREFIX:audit}", \
+    host => "${env.FLUENT_HOST:localhost}", \
+    port => "${env.FLUENT_PORT:24224}"})
 
 run-batch
 stop-embedded-server

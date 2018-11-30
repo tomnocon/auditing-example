@@ -7,19 +7,18 @@ import org.keycloak.events.EventListenerProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
-import org.jboss.logging.Logger;
+public class FluentEventListenerProviderFactory implements EventListenerProviderFactory {
 
-public class FluentdEventListenerProviderFactory implements EventListenerProviderFactory {
-
-    private static final Logger logger = Logger.getLogger(FluentdEventListenerProviderFactory.class);
-    private static final String ID = "fluentd";
+    private FluentConfig config;
+    private static final String ID = "fluent";
 
     public EventListenerProvider create(KeycloakSession keycloakSession) {
-        return new FluentdEventListenerProvider();
+        FluentLogger fluentLogger = FluentLogger.getLogger(config.getTagPrefix(), config.getHost(), config.getPort());
+        return new FluentEventListenerProvider(fluentLogger);
     }
 
     public void init(Config.Scope scope) {
-
+        config = FluentConfig.fromScopeConfig(scope);
     }
 
     public void postInit(KeycloakSessionFactory keycloakSessionFactory) {

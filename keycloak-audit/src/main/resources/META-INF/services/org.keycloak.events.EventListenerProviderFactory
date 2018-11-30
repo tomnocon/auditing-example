@@ -1,1 +1,1 @@
-com.tomnocon.keycloak.audit.FluentdEventListenerProviderFactory
+com.tomnocon.keycloak.audit.FluentEventListenerProviderFactory

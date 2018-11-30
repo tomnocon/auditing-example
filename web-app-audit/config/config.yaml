@@ -1,0 +1,24 @@
+# Server configuration
+server:
+  host: 0.0.0.0
+  port: 3000
+
+session:
+  storeBlank: false
+  name: 'kc_session'
+  maxCookieSize: 0
+  cookieOptions:
+    password: 45PxA^bk?a3wUFu?SMvrJ3BL?LSJ_8pSeTu85J2*cgqnMp8D**-RewAa-sKQ@nXp
+    isSecure: false
+    isHttpOnly: false
+
+# Keycloak plugin configuration
+keycloak:
+  serverUrl: http://localhost:8080/auth
+  realm: audit
+  clientId: web-app-audit
+  clientSecret: 59e54205-f310-4b50-85f8-d58b5d44352a
+
+fluentd:
+  host: 'localhost'
+  port: 24224

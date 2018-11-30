@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+    <title>Web app audit.</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+</head>
+<body class="container">
+<div class="box">
+    <div class="box-header">
+        <div class="dropdown">
+            <a class="drop-button">
+                <span id="menu-label">Menu</span>
+                <span class="caret"></span>
+            </a>
+            <div class="dropdown-content">
+                <a href="/sso/logout">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="box-body">
+        <h3 class="text-center">Application propagating UI related errors to EFK.</h3>
+        <button class="button button-primary" id="errorBtn">Make some mess!</button><br/>
+        <button class="button button-primary" id="errorAsyncBtn">Make some mess, asynchronously!</button><br/>
+        <a href="http://localhost:5601">Review errors in Kibana</a><br/>
+    </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+    document.getElementById('errorBtn').addEventListener('click', () => {
+        return new Promise.nonExistingThingy;
+    });
+
+    document.getElementById('errorAsyncBtn').addEventListener('click', () => {
+        return Promise.reject('Something went terribly wrong in our async call');
+    });
+</script>
+</body>
+</html>

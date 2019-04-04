@@ -14,7 +14,7 @@ public class FluentEventListenerProviderFactory implements EventListenerProvider
 
     public EventListenerProvider create(KeycloakSession keycloakSession) {
         FluentLogger fluentLogger = FluentLogger.getLogger(config.getTagPrefix(), config.getHost(), config.getPort());
-        return new FluentEventListenerProvider(fluentLogger);
+        return new FluentEventListenerProvider(fluentLogger, keycloakSession);
     }
 
     public void init(Config.Scope scope) {

@@ -1,4 +1,9 @@
 version: '3.5'
+
+x-logging:
+  &fluentd-logging
+  driver: fluentd
+
 services:
   fluentd:
     build: ./fluentd-audit
@@ -9,17 +14,46 @@ services:
     - "24224:24224"
     - "24224:24224/udp"
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.5.1
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0
     container_name: elasticsearch
     ports:
     - "9200:9200"
     environment:
       ES_JAVA_OPTS: -Xms1g -Xmx1g
+    logging: *fluentd-logging
+    depends_on:
+    - fluentd
+
+  elasticsearch_exporter:
+    image: justwatch/elasticsearch_exporter:1.0.2
+    container_name: elasticsearch_exporter
+    command:
+    - '-es.uri=http://elasticsearch:9200'
+    restart: always
+    ports:
+    - "9108:9108"
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:6.5.1
+    image: docker.elastic.co/kibana/kibana-oss:6.6.0
     container_name: kibana
     ports:
     - "5601:5601"
+    logging: *fluentd-logging
+    depends_on:
+    - fluentd
+  prometheus:
+    image: prom/prometheus:v2.7.1
+    container_name: prometheus
+    ports:
+    - "9090:9090"
+    command:
+    - '--config.file=/etc/prometheus/prometheus.yml'
+    volumes:
+    - ./env/prometheus:/etc/prometheus
+  grafana:
+    image: grafana/grafana:5.4.3
+    container_name: grafana
+    ports:
+    - "3000:3000"
   keycloak:
     build: ./keycloak-audit
     container_name: keycloak
@@ -30,7 +64,12 @@ services:
     command:
     - "-b 0.0.0.0"
     - "-Dkeycloak.import=/opt/jboss/keycloak/audit-realm.json"
+    - "--debug"
     ports:
     - "8080:8080"
+    - "8787:8787"
     volumes:
     - ./env/keycloak/audit-realm.json:/opt/jboss/keycloak/audit-realm.json
+    logging: *fluentd-logging
+    depends_on:
+    - fluentd

@@ -7,6 +7,16 @@
             "type": "geo_point"
           }
         }
+      },
+      "tag": {
+        "type": "text",
+        "analyzer":"simple",
+        "fields" : {
+          "keyword" : {
+            "type" : "keyword",
+            "ignore_above" : 256
+          }
+        }
       }
     }
   }

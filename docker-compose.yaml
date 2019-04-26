@@ -79,6 +79,7 @@ services:
     container_name: web-app
     environment:
       keycloak_serverUrl: "https://${DOMAIN_NAME}/auth"
+      fluentd_host: fluentd
     ports:
     - "3030:3030"
     - "9229:9229"

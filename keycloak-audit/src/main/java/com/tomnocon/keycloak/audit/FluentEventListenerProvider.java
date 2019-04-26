@@ -40,7 +40,11 @@ public class FluentEventListenerProvider implements EventListenerProvider {
         auth.setClientId(getClientId(event));
         auth.setUserId(event.getUserId());
         auth.setUsername(getUsername(event.getUserId()));
-        auth.setSessionId(event.getSessionId());
+        if (event.getSessionId() == null) {
+            auth.setSessionId(getLastUserSessionId(event.getUserId()));
+        } else {
+            auth.setSessionId(event.getSessionId());
+        }
         auth.setIpAddress(event.getIpAddress());
 
         Map<String, String> details = event.getDetails();
@@ -140,6 +144,9 @@ public class FluentEventListenerProvider implements EventListenerProvider {
     }
 
     private String getLastUserSessionId(String userId) {
+        if (userId == null) {
+            return null;
+        }
         RealmModel realmModel = keycloakSession.getContext().getRealm();
         UserModel userModel = keycloakSession.users().getUserById(userId, realmModel);
 

@@ -1,9 +1,12 @@
 {
   "realm": "audit",
   "enabled": true,
+  "sslRequired": "none",
   "requiredCredentials": [
     "password"
   ],
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
   "users": [
     {
       "username": "admin",
@@ -39,13 +42,13 @@
     {
       "clientId": "web-app-audit",
       "enabled": true,
-      "rootUrl": "http://localhost:3000/",
-      "adminUrl": "http://localhost:3000/",
-      "baseUrl": "http://localhost:3000/",
+      "rootUrl": "http://localhost:3030/",
+      "adminUrl": "http://localhost:3030/",
+      "baseUrl": "http://localhost:3030/",
       "bearerOnly": false,
       "directAccessGrantsEnabled": false,
       "redirectUris": [
-        "http://localhost:3000/*"
+        "*"
       ],
       "clientAuthenticatorType": "client-secret",
       "secret": "59e54205-f310-4b50-85f8-d58b5d44352a",

@@ -1,12 +1,11 @@
 version: '3.5'
 
-x-logging:
-  &fluentd-logging
+x-logging: &fluentd-logging
   driver: fluentd
 
 services:
   fluentd:
-    build: ./fluentd-audit
+    build: ./env/fluentd
     container_name: fluentd
     volumes:
     - ./env/fluentd/etc:/fluentd/etc
@@ -14,15 +13,16 @@ services:
     - "24224:24224"
     - "24224:24224/udp"
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0
     container_name: elasticsearch
     ports:
     - "9200:9200"
     environment:
       ES_JAVA_OPTS: -Xms1g -Xmx1g
-    logging: *fluentd-logging
-    depends_on:
-    - fluentd
+      discovery.type: single-node
+#    logging: *fluentd-logging
+#    depends_on:
+#    - fluentd
 
   elasticsearch_exporter:
     image: justwatch/elasticsearch_exporter:1.0.2
@@ -33,13 +33,13 @@ services:
     ports:
     - "9108:9108"
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:6.6.0
+    image: docker.elastic.co/kibana/kibana-oss:7.0.0
     container_name: kibana
     ports:
     - "5601:5601"
-    logging: *fluentd-logging
-    depends_on:
-    - fluentd
+#    logging: *fluentd-logging
+#    depends_on:
+#    - fluentd
   prometheus:
     image: prom/prometheus:v2.7.1
     container_name: prometheus
@@ -61,6 +61,7 @@ services:
     - KEYCLOAK_USER=admin
     - KEYCLOAK_PASSWORD=admin
     - FLUENT_HOST=fluentd
+    - PROXY_ADDRESS_FORWARDING=true
     command:
     - "-b 0.0.0.0"
     - "-Dkeycloak.import=/opt/jboss/keycloak/audit-realm.json"
@@ -70,6 +71,38 @@ services:
     - "8787:8787"
     volumes:
     - ./env/keycloak/audit-realm.json:/opt/jboss/keycloak/audit-realm.json
-    logging: *fluentd-logging
+#    logging: *fluentd-logging
+#    depends_on:
+#    - fluentd
+  web-app:
+    build: ./web-app-audit
+    container_name: web-app
+    environment:
+      keycloak_serverUrl: "https://${DOMAIN_NAME}/auth"
+    ports:
+    - "3030:3030"
+    - "9229:9229"
+    entrypoint:
+    - node
+    - --inspect=0.0.0.0:9229
+    - index.js
+  reverse-proxy:
+    image: haproxy:1.7
+    container_name: reverse-proxy
+    environment:
+      - DOMAIN_NAME
+    ports:
+    - "80:80"
+    volumes:
+    - "./env/reverse-proxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
     depends_on:
-    - fluentd
+      - web-app
+      - keycloak
+  configurator:
+    build: ./env/configurator
+    container_name: configurator
+    volumes:
+    - ./env/configurator/var:/var
+    entrypoint:
+    - sh
+    - /var/configure.sh

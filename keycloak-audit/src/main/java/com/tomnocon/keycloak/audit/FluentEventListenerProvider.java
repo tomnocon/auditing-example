@@ -13,6 +13,7 @@ import org.keycloak.models.*;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class FluentEventListenerProvider implements EventListenerProvider {
 
+    private final static String FLUENT_TAG_PREFIX = "audit";
     private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final FluentLogger fluentLogger;
@@ -37,10 +39,12 @@ public class FluentEventListenerProvider implements EventListenerProvider {
         auth.setRealmId(event.getRealmId());
         auth.setClientId(getClientId(event));
         auth.setUserId(event.getUserId());
+        auth.setUsername(getUsername(event.getUserId()));
         auth.setSessionId(event.getSessionId());
         auth.setIpAddress(event.getIpAddress());
 
-        Map<String, Object> eventDetails = new HashMap<>(event.getDetails());
+        Map<String, String> details = event.getDetails();
+        Map<String, Object> eventDetails = details == null ? Collections.emptyMap() : new HashMap<>(details);
         String tag = getUserEventTag(event);
 
         AuditEvent auditEvent = new AuditEvent();
@@ -49,8 +53,9 @@ public class FluentEventListenerProvider implements EventListenerProvider {
         auditEvent.setDetails(eventDetails);
         auditEvent.setTag(tag);
 
-        Map<String, Object> auditEventMap = OBJECT_MAPPER.convertValue(auditEvent, new TypeReference<Map<String, Object>>() {});
-        fluentLogger.log(tag, auditEventMap, TimeUnit.MILLISECONDS.toSeconds(event.getTime()));
+        Map<String, Object> auditEventMap = OBJECT_MAPPER.convertValue(auditEvent, new TypeReference<Map<String, Object>>() {
+        });
+        fluentLogger.log(FLUENT_TAG_PREFIX + '.' + tag, auditEventMap, TimeUnit.MILLISECONDS.toSeconds(event.getTime()));
     }
 
     @Override
@@ -61,6 +66,7 @@ public class FluentEventListenerProvider implements EventListenerProvider {
         auth.setRealmId(adminEvent.getAuthDetails().getRealmId());
         auth.setClientId(adminEvent.getAuthDetails().getClientId());
         auth.setUserId(adminEvent.getAuthDetails().getUserId());
+        auth.setUsername(getUsername(adminEvent.getAuthDetails().getUserId()));
         auth.setIpAddress(adminEvent.getAuthDetails().getIpAddress());
         String sessionId = getLastUserSessionId(adminEvent.getAuthDetails().getUserId());
         if (sessionId != null) {
@@ -81,8 +87,9 @@ public class FluentEventListenerProvider implements EventListenerProvider {
         auditEvent.setTag(tag);
         auditEvent.setTimestamp(Instant.ofEpochMilli(adminEvent.getTime()).toString());
 
-        Map<String, Object> auditEventMap = OBJECT_MAPPER.convertValue(auditEvent, new TypeReference<Map<String, Object>>() {});
-        fluentLogger.log(tag, auditEventMap, TimeUnit.MILLISECONDS.toSeconds(adminEvent.getTime()));
+        Map<String, Object> auditEventMap = OBJECT_MAPPER.convertValue(auditEvent, new TypeReference<Map<String, Object>>() {
+        });
+        fluentLogger.log(FLUENT_TAG_PREFIX + '.' + tag, auditEventMap, TimeUnit.MILLISECONDS.toSeconds(adminEvent.getTime()));
     }
 
     @Override
@@ -100,6 +107,14 @@ public class FluentEventListenerProvider implements EventListenerProvider {
             }
         }
         return tag;
+    }
+
+    private String getUsername(String userId) {
+        if (userId == null) {
+            return null;
+        }
+        UserModel userModel = keycloakSession.users().getUserById(userId, keycloakSession.getContext().getRealm());
+        return userModel == null ? null : userModel.getUsername();
     }
 
     private String getAdminEventTag(AdminEvent adminEvent) {

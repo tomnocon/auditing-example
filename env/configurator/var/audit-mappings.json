@@ -1,0 +1,13 @@
+{
+  "mappings": {
+    "properties": {
+      "geoip": {
+        "properties": {
+          "location": {
+            "type": "geo_point"
+          }
+        }
+      }
+    }
+  }
+}

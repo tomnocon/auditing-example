@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -eu
-/opt/jboss/keycloak/bin/jboss-cli.sh --file=/scripts/keycloak.cli
+$JBOSS_HOME/bin/jboss-cli.sh --file=$JBOSS_HOME/bin/keycloak.cli
 
 exec /opt/jboss/tools/docker-entrypoint.sh -c standalone.xml "$@"
 exit "$?"

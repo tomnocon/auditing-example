@@ -1,4 +1,4 @@
-FROM node:12.0-alpine
+FROM node:12.2
 
 WORKDIR /opt/web-app
 

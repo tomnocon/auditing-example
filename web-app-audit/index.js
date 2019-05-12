@@ -1,9 +1,10 @@
-const Hapi = require('hapi');
-const Inert = require('inert');
+const Hapi = require('@hapi/hapi');
+const Inert = require('@hapi/inert');
 const Path = require('path');
 const yamlFormat = require('nconf-yaml');
 const nconf = require('nconf/lib/nconf');
 const fluentd = require('fluent-logger');
+const promster = require('@promster/hapi');
 
 const getIpAddress = (request) => {
     const forwardedHeader = request.headers['x-forwarded-for'];
@@ -35,8 +36,10 @@ async function run() {
 
     await server.register(Inert);
 
+    await server.register(promster.createPlugin());
+
     await server.register({
-        plugin: require('yar'),
+        plugin: require('@hapi/yar'),
         options: config.session
     });
 
@@ -67,10 +70,22 @@ async function run() {
     });
 
     server.route({
+        method: 'GET',
+        path: '/metrics',
+        handler: (request, h) => {
+            return h.response(promster.getSummary())
+                .type(promster.getContentType());
+        },
+        config: {
+            auth: false
+        }
+    });
+
+    server.route({
         method: 'POST',
         path: '/api/audit-event',
         handler: (request) => {
-            const { key, data } = request.payload;
+            const {key, data} = request.payload;
             const accessToken = request.auth.credentials.accessToken.content;
             const tag = config.keycloak.clientId + '.' + key;
             const message = {

@@ -6,12 +6,13 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@hapi/hapi": "^18.3.1",
+    "@hapi/yar": "^9.2.0",
+    "@hapi/inert": "^5.2.0",
+    "@promster/hapi": "^2.2.0",
     "fluent-logger": "^3.2.1",
-    "hapi": "^17.6.0",
-    "inert": "^5.1.0",
     "keycloak-hapi": "^1.2.0",
     "nconf": "^0.10.0",
-    "nconf-yaml": "^1.0.2",
-    "yar": "^9.1.0"
+    "nconf-yaml": "^1.0.2"
   }
 }

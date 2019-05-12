@@ -13,7 +13,7 @@ services:
     - "24224:24224"
     - "24224:24224/udp"
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.1
     container_name: elasticsearch
     ports:
     - "9200:9200"
@@ -24,16 +24,16 @@ services:
 #    depends_on:
 #    - fluentd
 
-  elasticsearch_exporter:
+  elasticsearch-exporter:
     image: justwatch/elasticsearch_exporter:1.0.2
-    container_name: elasticsearch_exporter
+    container_name: elasticsearch-exporter
     command:
     - '-es.uri=http://elasticsearch:9200'
     restart: always
     ports:
     - "9108:9108"
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:7.0.0
+    build: ./env/kibana
     container_name: kibana
     ports:
     - "5601:5601"
@@ -69,6 +69,7 @@ services:
     ports:
     - "8080:8080"
     - "8787:8787"
+    - "5555:5555"
     volumes:
     - ./env/keycloak/audit-realm.json:/opt/jboss/keycloak/audit-realm.json
 #    logging: *fluentd-logging
